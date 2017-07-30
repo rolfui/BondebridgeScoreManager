@@ -23,6 +23,7 @@ A HTML/Javascript program for managing "bondebride" scores.
 ### Some tips
 
 * Type "enter" when writing in the "bid" or "got" row and the program will move the caret to the next appropriate text box to write in.
+* You can also type "k" or "K" in the got text fields. It does the same as typing the same number as the bid text field above.
 
 ### Coding
 
