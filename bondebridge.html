@@ -1,0 +1,645 @@
+<html>
+
+<head>
+<script>
+var players = [];
+var playerNames = [];
+var playerPositions = [];
+var playerTitles = [];
+var playerScores = [];
+
+var playerNumber = 0;
+var numberOfCards = 52;
+var maxNumberOfRounds = 13;
+
+var tableData = []
+var testDataPlayers = []
+
+function log(message)
+{
+	document.getElementById("log").innerHTML += message + "<br/>";
+}
+
+function addPlayer()
+{
+	players.push(playerNumber);
+	playerNames.push("");
+	playerNumber++;
+	setupTable();
+}
+
+function getNumberOfPlayers()
+{
+	return players.length;
+}
+
+function getNumberOfCards()
+{
+	return numberOfCards;
+}
+
+function getMaxNumberOfRounds()
+{
+	return maxNumberOfRounds;
+}
+
+function getNumberOfRounds()
+{
+	var playerCount = getNumberOfPlayers();
+	var cardCount = getNumberOfCards();
+	
+	var maxRoundCount = Math.floor(cardCount / playerCount);
+	
+	if(maxRoundCount > getMaxNumberOfRounds())
+		maxRoundCount = getMaxNumberOfRounds();
+	
+	return maxRoundCount;
+}
+
+function getNumberOfColumns()
+{
+	return getNumberOfRounds() * 2;
+}
+
+function createTableHeader()
+{
+	var rowStart = "<tr>"
+	var rowEnd = "</tr>"
+	var colStart = "<td>"
+	var colEnd = "</td>"
+	
+	var colText = "";
+	colText += rowStart;
+	
+	//Create the top left corner of the table.
+	colText += colStart;
+	colText += "Round:";
+	colText += colEnd + colStart + colEnd;
+	
+	for(var i=0; i<getNumberOfRounds(); i++)
+	{
+		colText += colStart;
+		colText += i + 1;
+		colText += colEnd;
+	}
+	for(var i=getNumberOfRounds() - 1; i>=0; i--)
+	{
+		colText += colStart;
+		colText += i + 1;
+		colText += colEnd;
+	}
+	
+	colText += colStart + "Sum" + colEnd;
+	colText += colStart + "Position" + colEnd;
+	colText += colStart + "Title" + colEnd;
+	
+	colText += rowEnd;
+	
+	colText += rowStart + colStart + "<br/>" + colEnd + rowEnd;
+	
+	return colText;
+}
+
+function generateBidRow(rowIndex)
+{
+	var colStart = "<td>";
+	var colEnd = "</td>";
+	var colText = "";
+	
+	var row = tableData[rowIndex]
+	
+	
+	for(var i=0; i<row.length; i++)
+	{
+		var value = row[i].bid;
+		colText += colStart;
+		colText += document.getElementById("bidElement").innerHTML.replace(/{r}/g,rowIndex).replace(/{c}/g,i).replace(/{v}/g,value);
+		colText += colEnd;
+	}
+	
+	return colText;
+}
+
+function generateGotRow(rowIndex)
+{
+	var colStart = "<td>";
+	var colEnd = "</td>";
+	var colText = "";
+	
+	var row = tableData[rowIndex]
+	
+	
+	for(var i=0; i<row.length; i++)
+	{
+		var value = row[i].got;
+		colText += colStart;
+		colText += document.getElementById("gotElement").innerHTML.replace(/{r}/g,rowIndex).replace(/{c}/g,i).replace(/{v}/g,value);
+		colText += colEnd;
+	}
+	
+	return colText;
+}
+
+function generateScoreRow(rowIndex)
+{
+	var colStart = "<td>";
+	var colEnd = "</td>";
+	var colText = "";
+	
+	var row = tableData[rowIndex]
+	
+	
+	for(var i=0; i<row.length; i++)
+	{
+		var score = row[i].score;
+		colText += colStart;
+		colText += document.getElementById("scoreElement").innerHTML.replace(/{r}/g,rowIndex).replace(/{c}/g,i).replace(/{s}/g,score);
+		colText += colEnd;
+	}
+	
+	return colText;
+}
+
+function generateScoreText(rowIndex)
+{
+	var colStart = "<td>";
+	var colEnd = "</td>";
+	var colText = "";
+	
+	colText += colStart;
+	colText += document.getElementById("playerScoreSumElement").innerHTML.replace(/{n}/g, players[rowIndex]);
+	colText += colEnd;
+	
+	return colText;
+}
+
+function generatePositionsText(rowIndex)
+{
+	var colStart = "<td>";
+	var colEnd = "</td>";
+	var colText = "";
+	
+	colText += colStart;
+	colText += document.getElementById("playerPositionElement").innerHTML.replace(/{n}/g, players[rowIndex]);
+	colText += colEnd;
+	
+	return colText;
+}
+
+function generateTitleText(rowIndex)
+{
+	var colStart = "<td>";
+	var colEnd = "</td>";
+	var colText = "";
+	
+	colText += colStart;
+	colText += document.getElementById("playerTitleElement").innerHTML.replace(/{n}/g, players[rowIndex]);
+	colText += colEnd;
+	
+	return colText;
+}
+
+function createPlayerRows(player, rowIndex)
+{
+	var rowStart = "<tr>";
+	var rowEnd = "</tr>";
+	var colStart = "<td>";
+	var colEnd = "</td>";
+	
+	var colText = "";
+	
+	colText += rowStart;
+	colText += colStart;
+	colText += document.getElementById("playerTopRow").innerHTML;
+	colText += colEnd;
+	colText += colStart + "Bid: " + colEnd;
+	colText += generateBidRow(rowIndex);
+	colText += generateScoreText(rowIndex);
+	colText += generatePositionsText(rowIndex);
+	colText += generateTitleText(rowIndex);
+	colText += rowEnd;
+	
+	colText += rowStart;
+	colText += colStart;
+	colText += document.getElementById("playerMiddleRow").innerHTML;
+	colText += colStart + "Got: " + colEnd;
+	colText += colEnd;
+	
+	colText += generateGotRow(rowIndex);
+	colText += rowEnd;
+	
+	colText += rowStart;
+	colText += colStart;
+	colText += document.getElementById("playerBottomRow").innerHTML;
+	colText += colEnd;
+	colText += colStart + "Score:" + colEnd;
+	colText += generateScoreRow(rowIndex);
+	colText += rowEnd;
+	colText += rowStart + colStart + "<br/>" + colEnd + rowEnd;
+	
+	colText = colText.replace(/{n}/g,player).replace(/{t}/g,player+1);
+	
+	return colText;
+}
+
+function updateTableData()
+{
+	newTable = [];
+	//Length is zero, meaning that it has no data
+	//In that case, we want to create a new table.
+	if(tableData.length == 0)
+	{
+		var numberOfRows = getNumberOfPlayers();
+		var numberOfCols = getNumberOfColumns();
+		
+		for(var i=0; i<numberOfRows; i++)
+		{
+			var row = [];
+			for(var u=0; u<numberOfCols; u++)
+			{
+				var elementObject = {bidSet:false, gotSet:false, bid:0, got:0, score:0};
+				row.push(elementObject);
+			}
+			newTable[i] = row;
+		}
+	}
+	//The old table had some data, so we want to copy as much as possible from it.
+	else
+	{
+		var numberOfRows = getNumberOfPlayers();
+		//Multiply by two since we are going both up and down
+		var numberOfCols = getNumberOfColumns();
+		
+		for(var i=0; i<numberOfRows; i++)
+		{
+			var player = players[i];
+			var copyFromIndex = testDataPlayers.indexOf(player);
+			var copyRow = [];
+			
+			if(copyFromIndex >= 0)
+				copyRow = tableData[copyFromIndex].slice()
+			
+			//Create the new row.
+			var newRow = [];
+			for(var u=0; u<numberOfCols; u++)
+			{
+				var elementObject = {bidSet:false, gotSet:false, bid:0, got:0, score:0};
+				newRow.push(elementObject);
+			}
+			
+			//Copy contents from old row into new row.
+			if(newRow.length <= copyRow.length)
+			{
+				//Divide by two since we are copying from both sides of copyrow
+				for(var u=0; u<Math.floor(newRow.length/2); u++)
+				{
+					newRow[u] = copyRow[u];
+					newRow[newRow.length - 1 - u] = copyRow[copyRow.length - 1 - u];
+				}
+			}
+			else
+			{
+				//Divide by two since we are copying from both sides of copyrow
+				for(var u=0; u<Math.floor(copyRow.length/2); u++)
+				{
+					newRow[u] = copyRow[u];
+					newRow[newRow.length - 1 - u] = copyRow[copyRow.length - 1 - u];
+				}
+			}
+			
+			newTable[i] = newRow;
+		}
+	}
+	
+	tableData = newTable.slice();
+	testDataPlayers = players.slice();
+}
+
+function writePlayerNames()
+{
+	for(var i=0;i<players.length;i++)
+	{
+		var player = players[i];
+		var playerName = playerNames[i];
+		document.getElementById("player"+player+"name").value = playerName;
+	}
+}
+
+function updateGUI()
+{
+	for(var i=0;i<tableData.length;i++)
+	{
+		for(var u=0;u<tableData[i].length;u++)
+		{
+			var element = tableData[i][u];
+			var bidVal = "";
+			var gotVal = "";
+			var scoreVal = element.score;
+			
+			if(element.bidSet)
+				bidVal = element.bid;
+			if(element.gotSet)
+				gotVal = element.got;
+			
+			document.getElementById("bid"+i+"_"+u).value = bidVal;
+			document.getElementById("got"+i+"_"+u).value = gotVal;
+			document.getElementById("score"+i+"_"+u).innerHTML = scoreVal;
+		}
+	}
+	
+	for(var i=0;i<players.length;i++)
+	{
+		var player = players[i];
+		document.getElementById("player"+player+"sum").innerHTML = playerScores[i];
+		document.getElementById("player"+player+"position").innerHTML = playerPositions[i];
+		document.getElementById("player"+player+"title").innerHTML = playerTitles[i];
+	}
+}
+
+function getRandomWinnerTitle()
+{
+	var winnerString = ["Winner", "Wiener", "Master bondebridge", "The best", "The legend", "The non-loser", "The Victorious"];
+	var selectedString = winnerString[Math.floor(Math.random()*winnerString.length)];
+	
+	return selectedString;
+}
+
+function getRandomLoserTitle()
+{
+	var loserString = ["Loser", "Non-winner", "Defeated"];
+	var selectedString = loserString[Math.floor(Math.random() * loserString.length)];
+	
+	return selectedString;
+}
+
+function getTitleFromPosition(position)
+{
+	if(position == 0)
+	{
+		return getRandomWinnerTitle();
+	}
+	else
+	{
+		return getRandomLoserTitle();
+	}
+}
+
+function updateTableStatistics()
+{
+	var tableSort = [];
+	for(var i=0;i<tableData.length;i++)
+	{
+		playerScores[i] = 0;
+		playerPositions[i] = 0;
+		playerTitles[i] = 0;
+		for(var u=0;u<tableData[i].length;u++)
+		{
+			playerScores[i] += tableData[i][u].score;
+		}
+		
+		tableSort[i] = {score:playerScores[i], index:i};
+	}
+	
+	tableSort.sort(function(a,b) {return b.score - a.score});
+	for(var i=0;i<tableData.length;i++)
+	{
+		var index = tableSort[i].index;
+		playerPositions[index] = i + 1;
+		playerTitles[index] = getTitleFromPosition(i);
+	}
+	
+	updateGUI();
+}
+
+function setupTable()
+{
+	var rowStart = "<tr>";
+	var rowEnd = "</tr>";
+	var colStart = "<td>";
+	var colEnd = "</td>";
+	
+	var tableText = "";
+	
+	updateTableData();
+	tableText += createTableHeader();
+	
+	for (var i=0; i < players.length; i++)
+	{
+		var row =  createPlayerRows(players[i], i);
+		tableText += row;
+	}
+	
+	document.getElementById("gameTable").innerHTML = tableText;
+	writePlayerNames();
+	updateTableStatistics();
+}
+
+function updateScores()
+{
+	for (var i=0;i<tableData.length;i++)
+	{
+		for(var u=0;u<tableData[i].length;u++)
+		{
+			var element = tableData[i][u];
+			if(element.bidSet && element.gotSet)
+			{
+				if(element.got == element.bid || element.got == "k" || element.got == "K")
+					element.score = element.bid + 5;
+				else
+					element.score = 0;
+			}
+			
+			tableData[i][u] = element;
+		}
+	}
+	
+	updateTableStatistics();
+}
+
+function changeBid(row, column)
+{
+	var value = document.getElementById("bid"+row+"_"+column).value;
+	var intValue = parseInt(value);
+	
+	if(!isNaN(intValue))
+	{
+		tableData[row][column].bid = intValue;
+		tableData[row][column].bidSet = true;
+		updateScores();
+	}
+	else
+		tableData[row][column].bidSet = false;
+}
+
+function changeGot(row, column)
+{
+	var value = document.getElementById("got"+row+"_"+column).value;
+	var intValue = parseInt(value);
+	
+	if(!isNaN(intValue))
+	{
+		tableData[row][column].got = intValue;
+		tableData[row][column].gotSet = true;
+		updateScores();
+	}
+	else if(value == "k" || value == "K")
+	{
+		tableData[row][column].got = value;
+		tableData[row][column].gotSet = true;
+		updateScores();
+	}
+	else
+		tableData[row][column].gotSet = false;
+}
+
+function removePlayer(n)
+{
+	var removeIndex = players.indexOf(n);
+	
+	if(removeIndex >= 0)
+	{
+		players.splice(removeIndex,1);
+		playerNames.splice(removeIndex,1);
+	}
+	else
+		console.log("Programming error");
+		
+	setupTable();
+}
+
+function updateName(n)
+{
+	var playerIndex = players.indexOf(n);
+	
+	if(playerIndex >= 0)
+	{
+		playerNames[playerIndex] = document.getElementById("player"+n+"name").value;
+	}
+	else
+		console.log("Programming error");
+		
+	console.log(playerNames);
+}
+
+//Its probably better to use tabindex, but whatever.
+function nextCell(isBid, rowIndex, colIndex)
+{
+	var nextRow = rowIndex + 1;
+	var nextCol = colIndex;
+	
+	if(nextRow >= getNumberOfPlayers())
+	{
+		nextRow = 0;
+		//Set it to the got column instead
+		if(isBid)
+			isBid = false;
+		else
+		{
+			isBid = true;
+			nextCol = colIndex + 1;
+			if(nextCol >= getNumberOfColumns())
+				nextCol = 0;
+		}
+	}
+	
+	if(isBid)
+		document.getElementById("bid"+nextRow+"_"+nextCol).focus();
+	else
+		document.getElementById("got"+nextRow+"_"+nextCol).focus();
+}
+
+function bidKeyPress(key, rowIndex, colIndex)
+{
+	var enterKey = 13;
+	if(key == enterKey)
+	{
+		nextCell(true, rowIndex, colIndex);
+	}
+	
+	changeBid(rowIndex, colIndex);
+	return false;
+}
+
+function gotKeyPress(key, rowIndex, colIndex)
+{
+	var enterKey = 13;
+	if(key == enterKey)
+	{
+		nextCell(false, rowIndex, colIndex);
+	}
+
+	changeGot(rowIndex, colIndex);
+	return false;
+}
+
+</script>
+</head>
+
+<body>
+
+<h1>Bondebrigde score manager</h1>
+
+<table>
+	<tbody id="gameTable">
+	</tbody>
+</table>
+
+<form>
+	<input type="button" onClick="addPlayer()" value="+ Add player +">
+</form>
+
+<br/>
+
+<div id="log">
+</div>
+
+<div style="display: none;">
+
+	<div id="playerTopRow">
+		<form onsubmit="return false;">
+			<input type="text" id="player{n}name" onkeyup="updateName({n})" tabindex="{t}">
+		</form>
+	</div>
+
+	<div id="playerMiddleRow">
+		<form onsubmit="return false;">
+			<input type="button" onClick="removePlayer({n})" value="Remove player" tabindex="-1">
+		</form>
+	</div>
+
+	<div id="playerBottomRow">
+	</div>
+
+	<div id="bidElement">
+		<form onsubmit="return false;">
+			<input type="text" id="bid{r}_{c}" value="{v}" size="1" onkeyup="bidKeyPress(event.keyCode,{r},{c})">
+		</form>
+	</div>
+
+	<div id="gotElement">
+		<form onsubmit="return false;">
+			<input type="text" id="got{r}_{c}" value="{v}" size="1" onkeyup="gotKeyPress(event.keyCode,{r},{c})">
+		</form>
+	</div>
+
+	<div id="scoreElement">
+		<div id="score{r}_{c}">{s}</div>
+	</div>
+	
+	<div id="playerScoreSumElement">
+		<div id="player{n}sum"></div>
+	</div>
+	
+	<div id="playerPositionElement">
+		<div id="player{n}position"></div>
+	</div>
+	
+	<div id="playerTitleElement">
+		<div id="player{n}title"></div>
+	</div>
+	
+</div>
+
+</body>
+
+</html>
